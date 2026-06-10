@@ -42,6 +42,41 @@
       border: 1px solid var(--border-color);
     }
 
+    /* Yeni Eklenen Üst Navigasyon Stilleri */
+    .top-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-decoration: none;
+      letter-spacing: 1px;
+      transition: color 0.2s ease;
+    }
+
+    .brand-title:hover {
+      color: var(--accent-color);
+    }
+
+    .nav-home-link {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .nav-home-link:hover {
+      color: var(--primary-color);
+    }
+
     .header {
       border-bottom: 2px solid var(--border-color);
       margin-bottom: 20px;
@@ -87,7 +122,8 @@
     }
 
     @media (min-width: 768px) {
-      .grid { grid-template-columns: 1fr 1fr; }
+      .grid { grid-template-columns: 1fr 1fr;
+      }
     }
 
     .input-group {
@@ -153,7 +189,8 @@
       color: white;
     }
 
-    .btn-convert:hover { background-color: var(--primary-hover); }
+    .btn-convert:hover { background-color: var(--primary-hover);
+    }
 
     .btn-download {
       background-color: #f1f5f9;
@@ -186,6 +223,12 @@
 <body>
 
 <div class="tool-container">
+  
+  <div class="top-navbar">
+    <a href="http://bozogluarchitects.com" target="_blank" class="brand-title">BOZOĞLU ARCHITECTS</a>
+    <a href="http://bozogluarchitects.com" target="_blank" class="nav-home-link">Ana Sayfa</a>
+  </div>
+
   <div class="header">
     <h2>Marmara Bölgesi - İstanbul Civarı<br>TKGM -> ITRF Dönüştürücü</h2>
   </div>
@@ -245,11 +288,9 @@ var polyline = [];
 function readTextFile(input) {
   let file = input.files[0];
   if (!file) return;
-
   let reader = new FileReader();
   reader.onload = function() {
     let content = reader.result;
-
     // Eğer KML ise koordinat bloğunu ayıkla
     if (content.includes("<coordinates>")) {
       let match = content.match(/<coordinates>([\s\S]*?)<\/coordinates>/);
@@ -276,11 +317,9 @@ function readTextFile(input) {
 function convertCoords() {
     var input = document.getElementById('inputCoords').value.trim();
     if(!input) return;
-
     var lines = input.split('\n');
     var converted = [];
     polyline = [];
-
     lines.forEach(line => {
         if(line.trim() === "") return; // Boş satırları atla
         var parts = line.split(',');
@@ -302,7 +341,8 @@ function convertCoords() {
 }
 
 function downloadDXF() {
-    if(polyline.length === 0) { alert('Önce dönüştürme yapın!'); return; }
+    if(polyline.length === 0) { alert('Önce dönüştürme yapın!'); return;
+    }
     var dxf = '0\nSECTION\n2\nENTITIES\n0\nPOLYLINE\n8\n0\n66\n1\n70\n1\n';
     polyline.forEach(p => {
         dxf += '0\nVERTEX\n8\n0\n10\n'+p[0]+'\n20\n'+p[1]+'\n30\n0\n';
