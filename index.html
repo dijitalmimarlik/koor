@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TKGM ITRF Dönüştürücü</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.js"></script>
+  <style>
+    :root {
+      --primary-color: #0f172a;
+      --primary-hover: #334155;
+      --accent-color: #3b82f6;
+      --bg-color: #ffffff;
+      --border-color: #e2e8f0;
+      --text-color: #1e293b;
+      --text-muted: #64748b;
+      --warning-bg: #fffbeb;
+      --warning-border: #fef3c7;
+      --warning-text: #92400e;
+      --radius: 8px;
+      /* Eksik değişkenler tanımlandı */
+      --gray-link: #64748b;
+      --accent: #000000;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: transparent;
+      color: var(--text-color);
+      margin: 0;
+      padding: 10px;
+      line-height: 1.5;
+    }
+
+    .tool-container {
+      max-width: 850px;
+      margin: 0 auto;
+      background: var(--bg-color);
+      padding: 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
+    }
+
+    .header {
+      border-bottom: 2px solid var(--border-color);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      color: var(--primary-color);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-box {
+      background-color: #f8fafc;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      border-radius: var(--radius);
+    }
+
+    .info-box ol {
+      margin: 8px 0 0 20px;
+      padding: 0;
+    }
+
+    .warning-box {
+      background-color: var(--warning-bg);
+      border: 1px solid var(--warning-border);
+      color: var(--warning-text);
+      padding: 12px;
+      border-radius: var(--radius);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 768px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--primary-color);
+    }
+
+    input[type="file"] {
+      font-size: 0.8rem;
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: var(--radius);
+      background: #fcfcfc;
+      cursor: pointer;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 0.8rem;
+      background-color: #fcfcfc;
+      transition: all 0.2s;
+      box-sizing: border-box;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      background-color: #fff;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-convert {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-convert:hover { background-color: var(--primary-hover); }
+
+    .btn-download {
+      background-color: #f1f5f9;
+      border: 1px solid var(--border-color);
+      color: var(--primary-color);
+    }
+
+    .btn-download:hover { background-color: #e2e8f0; }
+
+    .footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .footer a {
+      color: var(--gray-link);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      transition: color 0.3s ease;
+    }
+
+    .footer a:hover {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<div class="tool-container">
+  <div class="header">
+    <h2>Marmara Bölgesi - İstanbul Civarı<br>TKGM -> ITRF Dönüştürücü</h2>
+  </div>
+
+  <div class="info-box">
+    <strong>Kullanım Talimatları</strong>
+    <ol>
+      <li><b>TKGM'den</b> arazi bilgilerini KML formatında indirin.</li>
+      <li><b>Dosya Seç</b> butonu ile KML dosyasını seçin.</li>
+      <li>Veya manuel olarak <b>Lon, Lat</b> formatındaki koordinatları yapıştırın.</li>
+      <li><b>Dönüştür</b> butonu ile ITRF formatına çevirebilirsiniz.</li>
+      <li><b>DXF İndir</b> butonu ile polyline olarak indirebilirsiniz.</li>
+    </ol>
+  </div>
+
+  <div class="warning-box">
+    Koordinatlar yalnızca ön fikir verme amacıyla kullanılmalıdır. Resmi işlerde harita bürosunun resmi belgelerini kullanınız.
+  </div>
+
+  <div class="input-group">
+    <label for="fileInput">KML Dosyası Yükle</label>
+    <input type="file" id="fileInput" accept=".kml,.txt" onchange="readTextFile(this)">
+  </div>
+
+  <div class="input-group">
+    <label>WGS84 Giriş (Boylam, Enlem)</label>
+    <textarea id="inputCoords" rows="8" placeholder="Örn: 29.136, 40.930"></textarea>
+  </div>
+
+  <div class="actions">
+    <button class="btn-convert" onclick="convertCoords()">Dönüştür</button>
+    <button class="btn-download" onclick="downloadDXF()">DXF İndir</button>
+  </div>
+
+  <div class="grid">
+    <div class="input-group">
+      <label>TUREF TM30 (Y, X)</label>
+      <textarea id="outputCoords" rows="10" readonly></textarea>
+    </div>
+    <div class="input-group">
+      <label>AutoCAD Polyline (Pline)</label>
+      <textarea id="polylineOutput" rows="10" readonly></textarea>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="https://bozogluarchitects.com" target="_blank">bozogluarchitects.com</a>
+  </div>
+</div>
+
+<script>
+var TM30 = "+proj=tmerc +lat_0=0 +lon_0=30 +k=1 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs";
+var WGS84 = "+proj=longlat +datum=WGS84 +no_defs";
+var polyline = [];
+
+// Dosyadan veri okuma ve KML ayıklama fonksiyonu
+function readTextFile(input) {
+  let file = input.files[0];
+  if (!file) return;
+
+  let reader = new FileReader();
+  reader.onload = function() {
+    let content = reader.result;
+
+    // Eğer KML ise koordinat bloğunu ayıkla
+    if (content.includes("<coordinates>")) {
+      let match = content.match(/<coordinates>([\s\S]*?)<\/coordinates>/);
+      if (match && match[1]) {
+        // Koordinatları ayır, temizle ve Lon,Lat formatına getir
+        let rawCoords = match[1].trim().split(/[\s\n\r]+/);
+        let cleanCoords = rawCoords.map(pair => {
+          let parts = pair.split(',');
+          if (parts.length >= 2) {
+            return parts[0].trim() + "," + parts[1].trim();
+          }
+          return null;
+        }).filter(p => p !== null);
+        content = cleanCoords.join('\n');
+      }
+    }
+
+    document.getElementById('inputCoords').value = content;
+    convertCoords(); // Yüklendiği an otomatik dönüştür
+  };
+  reader.readAsText(file);
+}
+
+function convertCoords() {
+    var input = document.getElementById('inputCoords').value.trim();
+    if(!input) return;
+
+    var lines = input.split('\n');
+    var converted = [];
+    polyline = [];
+
+    lines.forEach(line => {
+        if(line.trim() === "") return; // Boş satırları atla
+        var parts = line.split(',');
+        if(parts.length >= 2) {
+            var lon = parseFloat(parts[0]);
+            var lat = parseFloat(parts[1]);
+            if(!isNaN(lon) && !isNaN(lat)) {
+                var xy = proj4(WGS84, TM30, [lon, lat]);
+                var xFixed = xy[0].toFixed(3);
+                var yFixed = xy[1].toFixed(3);
+                converted.push(xFixed + ', ' + yFixed);
+                polyline.push([xFixed, yFixed]);
+            }
+        }
+    });
+
+    document.getElementById('outputCoords').value = converted.join('\n');
+    document.getElementById('polylineOutput').value = 'pline\n' + polyline.map(p=>p.join(',')).join('\n') + '\nC';
+}
+
+function downloadDXF() {
+    if(polyline.length === 0) { alert('Önce dönüştürme yapın!'); return; }
+    var dxf = '0\nSECTION\n2\nENTITIES\n0\nPOLYLINE\n8\n0\n66\n1\n70\n1\n';
+    polyline.forEach(p => {
+        dxf += '0\nVERTEX\n8\n0\n10\n'+p[0]+'\n20\n'+p[1]+'\n30\n0\n';
+    });
+    dxf += '0\nSEQEND\n0\nENDSEC\n0\nEOF';
+    
+    var blob = new Blob([dxf], {type: 'application/dxf'});
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Proje_Koordinat.dxf';
+    link.click();
+}
+</script>
+</body>
+</html>
